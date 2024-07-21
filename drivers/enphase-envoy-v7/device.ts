@@ -6,6 +6,7 @@ import { DeviceSettings } from "./types";
 
 const NET_CONSUMPTION_METER = "net-consumption";
 const PRODUCTION_METER = "production";
+const METER_STATE_ENABLED = "enabled";
 
 class EnphaseEnvoy extends Inverter {
   interval = 1;
@@ -84,7 +85,9 @@ class EnphaseEnvoy extends Inverter {
       try {
         // Determine whether Envoy is metered
         // If it is, use meter data, otherwise get production data from inverter reports
-        const meterData = await this.enphaseApi.getMeters();
+        const meterResponse = await this.enphaseApi.getMeters();
+        // Filter out disabled meters before determining if the data is available
+        const meterData = meterResponse.filter((meter) => meter.state && meter.state === METER_STATE_ENABLED);
         const isMetered =
           meterData.length &&
           meterData
